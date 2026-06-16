@@ -2,20 +2,17 @@
 
 namespace Database\Seeders;
 
+use App\Models\BankLoan;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+class BankLoanSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
-     * Seed the application's database.
+     * Run the database seeds.
      */
     public function run(): void
     {
-        $this->call([
-            BankLoanSeeder::class
-        ]);
+        BankLoan::factory()->count(20)->create();
     }
 }

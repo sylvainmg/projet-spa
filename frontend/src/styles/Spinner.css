@@ -1,0 +1,31 @@
+.spinner-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.spinner-container[data-dark="true"] {
+  background-color: #0f172a;
+}
+
+.spinner-container[data-dark="true"] .spinner {
+  border-color: #334155;
+  border-top-color: #60a5fa;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

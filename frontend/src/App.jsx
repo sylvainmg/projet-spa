@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import {
+  AlertCircle,
   BarChart3,
+  CheckCircle,
   ClipboardList,
   FilePlus,
   Landmark,
   Moon,
+  Pencil,
   Sun,
 } from "./components/icons";
 import "./App.css";
@@ -14,13 +17,14 @@ import ListPret from "./components/ListPret";
 import Bilan from "./components/Bilan";
 import Historique from "./components/Historique";
 import api from "./utils/axios";
+import Swal from "sweetalert2";
+import Spinner from "./components/Spinner";
 
 function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentPage, setCurrentPage] = useState("add");
   const [prets, setPrets] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [logs, setLogs] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
 
   const toggleDarkMode = () => {
@@ -30,14 +34,25 @@ function App() {
   };
 
   // initial login, pour redirect automatiquement vers l'application
+  const fetchPrets = async () => {
+    const { data } = await api.get("/prets");
+    setPrets(data.data);
+  };
+
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const auth = async () => {
       try {
         await api.get("/auth/me");
         setIsConnected(true);
+
+        await fetchPrets();
       } catch (err) {
         setIsConnected(false);
         localStorage.removeItem("token");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -49,68 +64,88 @@ function App() {
     setDarkMode(saved);
   }, []);
 
-  function handleLogin() {
+  const [notification, setNotification] = useState(null); // { message, type }
+
+  function notify(message, type = "success") {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  }
+
+  function getErrorMessage(err) {
+    const errors = err.response?.data?.errors;
+    if (errors) {
+      return Object.values(errors)[0][0];
+    }
+    return err.response?.data?.message || "Une erreur est survenue.";
+  }
+
+  async function handleLogin() {
     setIsConnected(true);
+    await fetchPrets();
   }
 
-  function handleAddPret(newPret) {
-    const pretWithId = {
-      ...newPret,
-      id: Date.now(),
-    };
-    setPrets([...prets, pretWithId]);
+  async function handleAddPret(newPret) {
+    try {
+      const { data } = await api.post("/prets", newPret);
 
-    const now = new Date().toLocaleString("fr-FR");
-    setLogs([
-      {
-        type: "add",
-        message: `Prêt de ${pretWithId.nomClient} ajouté (${pretWithId.montant}€)`,
-        date: now,
-      },
-      ...logs,
-    ]);
-  }
+      await fetchPrets(); // récupérer la version fraîche de la liste
+      notify(data.message);
 
-  function handleDeletePret(id) {
-    const pretToDelete = prets.find((p) => p.id === id);
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce prêt?")) {
-      setPrets(prets.filter((p) => p.id !== id));
+      return true;
+    } catch (err) {
+      notify(getErrorMessage(err), "error");
 
-      const now = new Date().toLocaleString("fr-FR");
-      setLogs([
-        {
-          type: "delete",
-          message: `Prêt de ${pretToDelete.nomClient} supprimé`,
-          date: now,
-        },
-        ...logs,
-      ]);
+      return false;
     }
   }
 
-  function handleEditPret(id) {
-    setEditingId(id);
+  async function handleDeletePret(numCompte) {
+    const result = await Swal.fire({
+      title: "Confirmer la suppression",
+      text: "Êtes-vous sûr de vouloir supprimer ce prêt ?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Supprimer",
+      cancelButtonText: "Annuler",
+      confirmButtonColor: darkMode ? "#f87171" : "#ef4444",
+      cancelButtonColor: darkMode ? "#334155" : "#64748b",
+      background: darkMode ? "#1e293b" : "#ffffff",
+      color: darkMode ? "#f1f5f9" : "#0f172a",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const { data } = await api.delete(`/prets/${numCompte}`);
+
+        setPrets((prev) => prev.filter((p) => p.numCompte !== numCompte));
+        notify(data.message);
+      } catch (err) {
+        notify(getErrorMessage(err), "error");
+      }
+    }
+  }
+
+  function handleEditPret(numCompte) {
+    setEditingId(numCompte);
     setCurrentPage("add");
   }
 
-  function handleUpdatePret(pretUpdated) {
-    setPrets(
-      prets.map((p) =>
-        p.id === editingId ? { ...pretUpdated, id: editingId } : p,
-      ),
-    );
+  async function handleUpdatePret(pretUpdated) {
+    try {
+      const { data } = await api.put(`/prets/${editingId}`, pretUpdated);
 
-    const now = new Date().toLocaleString("fr-FR");
-    setLogs([
-      {
-        type: "edit",
-        message: `Prêt de ${pretUpdated.nomClient} modifié`,
-        date: now,
-      },
-      ...logs,
-    ]);
+      await fetchPrets(); // récupérer la version fraîche de la liste
+      setEditingId(null);
 
-    setEditingId(null);
+      setCurrentPage("list");
+      notify(data.message);
+
+      return true;
+    } catch (err) {
+      notify(getErrorMessage(err), "error");
+
+      return false;
+    }
   }
 
   async function handleLogout() {
@@ -121,8 +156,17 @@ function App() {
     setCurrentPage("add");
   }
 
+  if (isLoading) {
+    return <Spinner />;
+  }
+
   if (!isConnected) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} darkMode={darkMode} />;
+  }
+
+  function handleNavChange(fn, arg) {
+    fn(arg);
+    if (editingId) setEditingId(null);
   }
 
   return (
@@ -158,15 +202,23 @@ function App() {
           <nav className="menu">
             <button
               className={`menu-item ${currentPage === "add" ? "active" : ""}`}
-              onClick={() => setCurrentPage("add")}
+              onClick={() => {
+                handleNavChange(setCurrentPage, "add");
+              }}
             >
-              <FilePlus className="menu-icon" aria-hidden="true" /> Ajouter un
-              prêt
+              {editingId ? (
+                <Pencil className="menu-icon" aria-hidden="true" />
+              ) : (
+                <FilePlus className="menu-icon" aria-hidden="true" />
+              )}
+              {editingId ? "Modifier le Prêt" : "Ajouter un prêt"}
             </button>
 
             <button
               className={`menu-item ${currentPage === "list" ? "active" : ""}`}
-              onClick={() => setCurrentPage("list")}
+              onClick={() => {
+                handleNavChange(setCurrentPage, "list");
+              }}
             >
               <ClipboardList className="menu-icon" aria-hidden="true" /> Liste &
               Modification
@@ -174,7 +226,9 @@ function App() {
 
             <button
               className={`menu-item ${currentPage === "bilan" ? "active" : ""}`}
-              onClick={() => setCurrentPage("bilan")}
+              onClick={() => {
+                handleNavChange(setCurrentPage, "bilan");
+              }}
             >
               <BarChart3 className="menu-icon" aria-hidden="true" /> Bilan &
               Graphes
@@ -182,7 +236,9 @@ function App() {
 
             <button
               className={`menu-item ${currentPage === "historique" ? "active" : ""}`}
-              onClick={() => setCurrentPage("historique")}
+              onClick={() => {
+                handleNavChange(setCurrentPage, "historique");
+              }}
             >
               <ClipboardList className="menu-icon" aria-hidden="true" />{" "}
               Historique
@@ -193,10 +249,12 @@ function App() {
         <main className="content">
           {currentPage === "add" && (
             <AddPret
+              key={editingId ?? "new"}
               onAddPret={handleAddPret}
               onUpdatePret={handleUpdatePret}
+              onError={(msg) => notify(msg, "error")}
               editingId={editingId}
-              editingPret={prets.find((p) => p.id === editingId)}
+              editingPret={prets.find((p) => p.numCompte === editingId)}
             />
           )}
           {currentPage === "list" && (
@@ -207,9 +265,20 @@ function App() {
             />
           )}
           {currentPage === "bilan" && <Bilan prets={prets} />}
-          {currentPage === "historique" && <Historique logs={logs} />}
+          {currentPage === "historique" && <Historique />}
         </main>
       </div>
+
+      {notification && (
+        <div className={`message ${notification.type}`}>
+          {notification.type === "success" ? (
+            <CheckCircle aria-hidden="true" />
+          ) : (
+            <AlertCircle aria-hidden="true" />
+          )}
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 }

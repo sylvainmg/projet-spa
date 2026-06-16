@@ -1,4 +1,5 @@
 import axios from "axios";
+import { camelizeKeys } from "humps";
 
 const api = axios.create({ baseURL: "http://localhost:8000/api" });
 
@@ -11,7 +12,10 @@ api.interceptors.request.use((config) => {
 
 // Gère les erreurs globalement
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    response.data = camelizeKeys(response.data);
+    return response;
+  },
   (error) => {
     const url = error.config?.url || "";
 

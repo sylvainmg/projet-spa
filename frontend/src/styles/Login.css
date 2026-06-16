@@ -1,14 +1,15 @@
-
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../assets/Login-bg.png');
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("../assets/Login-bg.png");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 .login-box {
   background: opaque;
@@ -19,8 +20,15 @@
   max-width: 400px;
   text-align: center;
 }
+.login-box .form-group label {
+  font-weight: 800;
+  color: #d4af37;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.7);
+  margin-bottom: 8px;
+  font-size: 18px;
+}
 .login-box h1 {
-  color:#39ff14;
+  color: #39ff14;
   margin-bottom: 10px;
   font-size: 28px;
   display: flex;
@@ -51,15 +59,6 @@
   flex-direction: column;
   text-align: left;
 }
-  .form-group label {
-    font-weight: 800;
-   color: #d4af37;
-    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.7);
-    margin-bottom: 8px;
-    font-size: 18px;
-  }
-
-
 
 .form-group input {
   padding: 12px;
@@ -100,7 +99,9 @@
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .login-btn:hover {
@@ -119,7 +120,7 @@
 
 .password-input-wrapper input {
   width: 100%;
-  padding-right: 45px;  /* Espace pour l'œil */
+  padding-right: 45px; /* Espace pour l'œil */
 }
 
 .toggle-password-btn {
@@ -137,7 +138,6 @@
 .toggle-password-btn:hover {
   color: #764ba2;
 }
-
 
 .toggle-password-btn svg {
   width: 18px;

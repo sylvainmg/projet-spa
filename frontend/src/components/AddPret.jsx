@@ -1,78 +1,92 @@
-import { useState } from 'react';
-import { AlertCircle, CheckCircle, FilePlus, Pencil } from './icons';
-import '../styles/AddPret.css';
+import { useState } from "react";
+import { FilePlus, Pencil } from "./icons";
+import "../styles/AddPret.css";
 
-function AddPret({ onAddPret, onUpdatePret, editingId, editingPret }) {
+function AddPret({ onAddPret, onUpdatePret, editingId, editingPret, onError }) {
   // État pour chaque champ du formulaire
-  const [formData, setFormData] = useState(editingPret ||{
-    numCompte: '',
-    nomClient: '',
-    nomBanque: '',
-    montant: '',
-    datePret: '',
-    tauxPret: '',
-  });
-
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' ou 'error'
+  const [formData, setFormData] = useState(
+    editingPret || {
+      numCompte: "",
+      nomClient: "",
+      nomBanque: "",
+      montant: "",
+      datePret: "",
+      tauxPret: "",
+    },
+  );
 
   // Fonction appelée quand on change un champ
   function handleInputChange(e) {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   }
 
   // Fonction appelée quand on clique "Ajouter"
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     // Validation: vérifier que tous les champs sont remplis
-    if (!formData.numCompte || !formData.nomClient || !formData.nomBanque || 
-        !formData.montant || !formData.datePret || !formData.tauxPret) {
-      setMessage('Tous les champs sont requis!');
-      setMessageType('error');
+    if (
+      !formData.numCompte ||
+      !formData.nomClient ||
+      !formData.nomBanque ||
+      !formData.montant ||
+      !formData.datePret ||
+      !formData.tauxPret
+    ) {
+      onError("Tous les champs sont requis.");
       return;
     }
 
     // Validation: vérifier que le montant est positif
     if (parseFloat(formData.montant) <= 0) {
-      setMessage('Le montant doit être positif!');
-      setMessageType('error');
+      onError("Le montant doit être positif.");
       return;
     }
-// Si on édite ou si on ajoute
-if (editingId) {
-  setMessage('Prêt modifié avec succès!');
-  if (onUpdatePret) {
-    onUpdatePret(formData);
-  }
-} else {
-  setMessage('Prêt ajouté avec succès!');
-  if (onAddPret) {
-    onAddPret(formData);
-  }
-}
-setMessageType('success');
-    // Réinitialiser le formulaire
-    setFormData({
-      numCompte: '',
-      nomClient: '',
-      nomBanque: '',
-      montant: '',
-      datePret: '',
-      tauxPret: '',
-    });
 
-    // Masquer le message après 3 secondes
-    setTimeout(() => setMessage(''), 3000);
+    let success = false;
+
+    // Si on édite ou si on ajoute
+    if (editingId) {
+      if (onUpdatePret) {
+        success = await onUpdatePret(formData);
+      }
+    } else {
+      if (onAddPret) {
+        success = onAddPret(formData);
+      }
+    }
+    // Réinitialiser le formulaire
+    if (success) {
+      setFormData({
+        numCompte: "",
+        nomClient: "",
+        nomBanque: "",
+        montant: "",
+        datePret: "",
+        tauxPret: "",
+      });
+    }
   }
 
   return (
     <div className="add-pret-container">
-     <h2>{editingId ? <><Pencil className="section-icon" aria-hidden="true" /> Modifier le prêt</> : <><FilePlus className="section-icon" aria-hidden="true" /> Ajouter un nouveau prêt</>}</h2>
+      <h2>
+        {editingId ? (
+          <>
+            <Pencil className="section-icon" aria-hidden="true" /> Modifier le
+            prêt
+          </>
+        ) : (
+          <>
+            <FilePlus className="section-icon" aria-hidden="true" /> Ajouter un
+            nouveau prêt
+          </>
+        )}
+      </h2>
 
       <form onSubmit={handleSubmit} className="pret-form">
         {/* Première ligne: Numéro de compte + Nom client */}
@@ -114,7 +128,7 @@ setMessageType('success');
           </div>
 
           <div className="form-group">
-            <label>Montant (€) *</label>
+            <label>Montant (Ar) *</label>
             <input
               type="number"
               name="montant"
@@ -153,18 +167,10 @@ setMessageType('success');
           </div>
         </div>
 
-      <button type="submit" className="submit-btn">
-  {editingId ? 'Mettre à jour' : 'Ajouter le prêt'}
-</button>
+        <button type="submit" className="submit-btn">
+          {editingId ? "Mettre à jour" : "Ajouter le prêt"}
+        </button>
       </form>
-
-      {/* Message de succès ou erreur */}
-      {message && (
-        <div className={`message ${messageType}`}>
-          {messageType === 'success' ? <CheckCircle aria-hidden="true" /> : <AlertCircle aria-hidden="true" />}
-          {message}
-        </div>
-      )}
     </div>
   );
 }

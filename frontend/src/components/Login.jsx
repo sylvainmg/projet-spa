@@ -3,7 +3,7 @@ import { Eye, Landmark, Lock } from "./icons";
 import api from "../utils/axios";
 import "../styles/Login.css";
 
-function Login({ onLogin }) {
+function Login({ onLogin, darkMode }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,7 +30,7 @@ function Login({ onLogin }) {
   }
 
   return (
-    <div className="login-container">
+    <div className="login-container" data-theme={darkMode ? "dark" : "light"}>
       <div className="login-box">
         <h1>
           <Landmark className="title-icon" aria-hidden="true" /> Gestion des
