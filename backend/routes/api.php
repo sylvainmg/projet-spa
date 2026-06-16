@@ -25,3 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->except(['show']);
     Route::get('/historique', [LogController::class, 'index']);
 });
+
+Route::get("/", function () {
+    return response()->json(['status' => 'ok']);
+});
