@@ -35,7 +35,7 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($request->only('username', 'password'))) {
-            return response()->json(['message' => 'Identifiants invalides'], 401);
+            return response()->json(['message' => 'Identifiants invalides.'], 401);
         }
 
         $user = Auth::user();
@@ -50,7 +50,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Déconnecté avec succès']);
+        return response()->json(['message' => 'Déconnecté avec succès.']);
     }
 
     public function me(Request $request)

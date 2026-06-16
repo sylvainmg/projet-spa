@@ -8,8 +8,10 @@ function Login({ onLogin, darkMode }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
 
     if (!username || !password) {
       setError("Veuillez remplir tous les champs");
@@ -17,6 +19,7 @@ function Login({ onLogin, darkMode }) {
     }
 
     try {
+      setIsLoading(true);
       const { data, status } = await api.post("/auth/login", {
         username,
         password,
@@ -24,8 +27,10 @@ function Login({ onLogin, darkMode }) {
 
       localStorage.setItem("token", data.token);
       if (status === 200) onLogin();
+      setIsLoading(false);
     } catch (error) {
       setError(error.response?.data?.message || "");
+      setIsLoading(false);
     }
   }
 
@@ -78,8 +83,8 @@ function Login({ onLogin, darkMode }) {
           </div>
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="login-btn">
-            Se connecter
+          <button type="submit" className="login-btn" disabled={isLoading}>
+            {isLoading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
       </div>

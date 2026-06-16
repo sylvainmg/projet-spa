@@ -104,9 +104,22 @@
     box-shadow 0.2s;
 }
 
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: linear-gradient(135deg, #9aa7d6 0%, #9b8ac2 100%);
+}
+
 .login-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.login-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .login-btn:active {

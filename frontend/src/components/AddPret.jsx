@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { FilePlus, Pencil } from "./icons";
 import "../styles/AddPret.css";
+import AppSpinner from "./AppSpinner";
 
-function AddPret({ onAddPret, onUpdatePret, editingId, editingPret, onError }) {
+function AddPret({
+  onAddPret,
+  onUpdatePret,
+  editingId,
+  editingPret,
+  onError,
+  isLoading,
+}) {
   // État pour chaque champ du formulaire
   const [formData, setFormData] = useState(
     editingPret || {
@@ -71,6 +79,8 @@ function AddPret({ onAddPret, onUpdatePret, editingId, editingPret, onError }) {
       });
     }
   }
+
+  if (isLoading) return <AppSpinner />;
 
   return (
     <div className="add-pret-container">

@@ -25,7 +25,11 @@ function App() {
   const [currentPage, setCurrentPage] = useState("add");
   const [prets, setPrets] = useState([]);
   const [editingId, setEditingId] = useState(null);
+
   const [darkMode, setDarkMode] = useState(false);
+  const [loadingList, setLoadingList] = useState(true);
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [loadingLogout, setLoadingLogout] = useState(false);
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -37,6 +41,7 @@ function App() {
   const fetchPrets = async () => {
     const { data } = await api.get("/prets");
     setPrets(data.data);
+    setLoadingList(false);
   };
 
   const [isLoading, setIsLoading] = useState(true);
@@ -86,10 +91,12 @@ function App() {
 
   async function handleAddPret(newPret) {
     try {
+      setLoadingAdd(true);
       const { data } = await api.post("/prets", newPret);
 
       await fetchPrets(); // récupérer la version fraîche de la liste
       notify(data.message);
+      setLoadingAdd(false);
 
       return true;
     } catch (err) {
@@ -132,10 +139,12 @@ function App() {
 
   async function handleUpdatePret(pretUpdated) {
     try {
+      setLoadingAdd(true);
       const { data } = await api.put(`/prets/${editingId}`, pretUpdated);
 
       await fetchPrets(); // récupérer la version fraîche de la liste
       setEditingId(null);
+      setLoadingAdd(false);
 
       setCurrentPage("list");
       notify(data.message);
@@ -150,11 +159,16 @@ function App() {
 
   async function handleLogout() {
     // supprime le token
-    await api.post("/auth/logout").then(() => localStorage.removeItem("token"));
+    setLoadingLogout(true);
+    await api.post("/auth/logout");
+    localStorage.removeItem("token");
+    setLoadingLogout(false);
 
     setIsConnected(false);
     setCurrentPage("add");
   }
+
+  if (loadingLogout) return <Spinner />;
 
   if (isLoading) {
     return <Spinner />;
@@ -249,6 +263,7 @@ function App() {
         <main className="content">
           {currentPage === "add" && (
             <AddPret
+              isLoading={loadingAdd}
               key={editingId ?? "new"}
               onAddPret={handleAddPret}
               onUpdatePret={handleUpdatePret}
@@ -262,9 +277,12 @@ function App() {
               prets={prets}
               onDelete={handleDeletePret}
               onEdit={handleEditPret}
+              isLoading={loadingList}
             />
           )}
-          {currentPage === "bilan" && <Bilan prets={prets} />}
+          {currentPage === "bilan" && (
+            <Bilan prets={prets} isLoading={loadingList} />
+          )}
           {currentPage === "historique" && <Historique />}
         </main>
       </div>

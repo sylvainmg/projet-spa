@@ -2,6 +2,7 @@ import { ClipboardList, FilePlus, Pencil, Trash2 } from "./icons";
 import "../styles/Historique.css";
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
+import AppSpinner from "./AppSpinner";
 
 function Historique() {
   const logIcons = {
@@ -11,14 +12,18 @@ function Historique() {
   };
 
   const [logs, setLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       const { data } = await api.get("/historique");
       setLogs(data.data);
+      setIsLoading(false);
     };
     load();
   }, []);
+
+  if (isLoading) return <AppSpinner />;
 
   return (
     <div className="historique-container">

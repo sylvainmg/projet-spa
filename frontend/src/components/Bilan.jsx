@@ -13,8 +13,9 @@ import {
 import { BarChart3 } from "./icons";
 import "../styles/Bilan.css";
 import { spaceThounsands } from "../utils/spaceThousands";
+import AppSpinner from "./AppSpinner";
 
-function Bilan({ prets }) {
+function Bilan({ prets, isLoading }) {
   // Calcul du montant à payer
   function calculateMontantAPayer(montant, taux) {
     return parseFloat(montant) * (1 + parseFloat(taux) / 100);
@@ -54,6 +55,8 @@ function Bilan({ prets }) {
     "#EC4899",
     "#14B8A6",
   ];
+
+  if (isLoading) return <AppSpinner />;
 
   return (
     <div className="bilan-container">
