@@ -2,8 +2,7 @@ import "../styles/ListPret.css";
 import { useState } from "react";
 import { ClipboardList, FilePlus, Pencil, Search, Trash2 } from "./icons";
 import { spaceThounsands } from "../utils/spaceThousands";
-import AppSpinner from "./AppSpinner";
-function ListPret({ prets, onDelete, onEdit, isLoading }) {
+function ListPret({ prets, onDelete, onEdit }) {
   // Fonction pour calculer le montant à payer
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,7 +15,6 @@ function ListPret({ prets, onDelete, onEdit, isLoading }) {
       pret.nomBanque.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pret.numCompte.includes(searchTerm),
   );
-  if (isLoading) return <AppSpinner />;
   return (
     <div className="list-pret-container">
       <h2>

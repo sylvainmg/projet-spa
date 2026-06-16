@@ -24,10 +24,10 @@ function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentPage, setCurrentPage] = useState("add");
   const [prets, setPrets] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
   const [darkMode, setDarkMode] = useState(false);
-  const [loadingList, setLoadingList] = useState(true);
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingLogout, setLoadingLogout] = useState(false);
 
@@ -41,7 +41,11 @@ function App() {
   const fetchPrets = async () => {
     const { data } = await api.get("/prets");
     setPrets(data.data);
-    setLoadingList(false);
+  };
+
+  const fetchLogs = async () => {
+    const { data } = await api.get("/historique");
+    setLogs(data.data);
   };
 
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +57,7 @@ function App() {
         setIsConnected(true);
 
         await fetchPrets();
+        await fetchLogs();
       } catch (err) {
         setIsConnected(false);
         localStorage.removeItem("token");
@@ -87,6 +92,7 @@ function App() {
   async function handleLogin() {
     setIsConnected(true);
     await fetchPrets();
+    await fetchLogs();
   }
 
   async function handleAddPret(newPret) {
@@ -95,6 +101,7 @@ function App() {
       const { data } = await api.post("/prets", newPret);
 
       await fetchPrets(); // récupérer la version fraîche de la liste
+      await fetchLogs();
       notify(data.message);
       setLoadingAdd(false);
 
@@ -125,6 +132,7 @@ function App() {
         const { data } = await api.delete(`/prets/${numCompte}`);
 
         setPrets((prev) => prev.filter((p) => p.numCompte !== numCompte));
+        await fetchLogs();
         notify(data.message);
       } catch (err) {
         notify(getErrorMessage(err), "error");
@@ -143,6 +151,7 @@ function App() {
       const { data } = await api.put(`/prets/${editingId}`, pretUpdated);
 
       await fetchPrets(); // récupérer la version fraîche de la liste
+      await fetchLogs();
       setEditingId(null);
       setLoadingAdd(false);
 
@@ -182,7 +191,6 @@ function App() {
     fn(arg);
     if (editingId) setEditingId(null);
   }
-
   return (
     <div className="app-container" data-theme={darkMode ? "dark" : "light"}>
       <header className="header">
@@ -277,13 +285,10 @@ function App() {
               prets={prets}
               onDelete={handleDeletePret}
               onEdit={handleEditPret}
-              isLoading={loadingList}
             />
           )}
-          {currentPage === "bilan" && (
-            <Bilan prets={prets} isLoading={loadingList} />
-          )}
-          {currentPage === "historique" && <Historique />}
+          {currentPage === "bilan" && <Bilan prets={prets} />}
+          {currentPage === "historique" && <Historique logs={logs} />}
         </main>
       </div>
 
