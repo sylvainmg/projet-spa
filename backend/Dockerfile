@@ -2,8 +2,9 @@ FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y \
     unzip curl git \
-    libzip-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip xml ctype fileinfo
+    libzip-dev libonig-dev libxml2-dev libpq-dev \
+    && docker-php-ext-install \
+    pdo pdo_mysql pdo_pgsql mbstring zip xml ctype fileinfo
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
