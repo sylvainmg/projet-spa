@@ -1,7 +1,7 @@
 import axios from "axios";
 import { camelizeKeys } from "humps";
 
-const api = axios.create({ baseURL: "http://localhost:8000/api" });
+const api = axios.create({ baseURL: "https://projet-spa.onrender.com/api" });
 
 // Ajoute le token à chaque requête automatiquement
 api.interceptors.request.use((config) => {
