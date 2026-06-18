@@ -113,7 +113,11 @@ function Bilan({ prets }) {
                     textAnchor="end"
                     height={100}
                   />
-                  <YAxis tickFormatter={(v) => `Ar${(v / 1000).toFixed(0)}k`} />
+                  <YAxis
+                    tickFormatter={(v) =>
+                      `${spaceThounsands((v / 1000).toFixed(0))}k`
+                    }
+                  />
                   <Tooltip
                     formatter={(value) =>
                       `Ar${spaceThounsands(value.toFixed(2))}`
