@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import { BarChart3 } from "./icons";
 import "../styles/Bilan.css";
@@ -35,6 +36,7 @@ function Bilan({ prets }) {
   // Données pour le graphique en barres
   const dataBarChart = donneesTableau.map((p) => ({
     nom: p.nomClient.substring(0, 10),
+    nomComplet: p.nomClient,
     montant: p.montantAPayer,
   }));
 
@@ -99,7 +101,7 @@ function Bilan({ prets }) {
             {/* HISTOGRAMME */}
             <div className="chart-box">
               <h3>Montants par Client (Histogramme)</h3>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={400}>
                 <BarChart
                   data={dataBarChart}
                   margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
@@ -111,8 +113,15 @@ function Bilan({ prets }) {
                     textAnchor="end"
                     height={100}
                   />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `Ar${value.toFixed(2)}`} />
+                  <YAxis tickFormatter={(v) => `Ar${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    formatter={(value) =>
+                      `Ar${spaceThounsands(value.toFixed(2))}`
+                    }
+                    labelFormatter={(label, payload) =>
+                      payload?.[0]?.payload?.nomComplet || label
+                    }
+                  />
                   <Bar dataKey="montant" fill="#667eea" />
                 </BarChart>
               </ResponsiveContainer>
@@ -128,10 +137,8 @@ function Bilan({ prets }) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value }) =>
-                      `${name.substring(0, 8)}: Ar${value.toFixed(0)}`
-                    }
-                    outerRadius={80}
+                    label={false}
+                    outerRadius={110}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -142,7 +149,23 @@ function Bilan({ prets }) {
                       />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `Ar${value.toFixed(2)}`} />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      `Ar${spaceThounsands(value.toFixed(2))}`,
+                      name,
+                    ]}
+                  />
+                  <Legend
+                    layout="vertical"
+                    align="right"
+                    verticalAlign="middle"
+                    wrapperStyle={{
+                      maxHeight: "250px",
+                      overflowY: "auto",
+                      fontSize: "12px",
+                      paddingLeft: "10px",
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
